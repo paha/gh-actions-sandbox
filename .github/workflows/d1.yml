@@ -1,0 +1,34 @@
+---
+name: Actions debug
+
+on:
+  push:
+    branches:
+      - main
+      - pavel
+
+jobs:
+  terraform:
+    name: Debug
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 2
+
+      - name: git_log
+        id: debug
+        run: git show --format= --no-renames --name-only -n 1
+
+      - name: git tree
+        run: git diff-tree --no-commit-id --name-only -r ${{ github.sha }}
+
+      - name: git with output
+        id: test
+        run: |
+          echo "::set-output name=files::$(git diff-tree --no-commit-id --name-only -r ${{ github.sha }} | xargs)"
+
+      - name: echo output
+        run: |
+          echo ${{ steps.test.outputs.files }}
